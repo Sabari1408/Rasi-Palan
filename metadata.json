@@ -1,0 +1,6 @@
+{
+  "name": "Tamil Rasi Palan",
+  "description": "Daily Tamil Rasi Palan horoscope, panchangam, auspicious timings, personalized star alerts, and localized astrological insights.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
