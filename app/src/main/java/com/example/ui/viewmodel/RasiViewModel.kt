@@ -9,7 +9,9 @@ import com.example.data.model.*
 import com.example.data.repository.AstrologyDataProvider
 import com.example.data.repository.GeminiRasiRepository
 import com.example.data.repository.RasiRepository
+import com.example.ui.components.AlertScheduler
 import com.example.ui.components.NotificationHelper
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.*
@@ -85,15 +87,17 @@ class RasiViewModel(application: Application) : AndroidViewModel(application) {
                         "LIGHT" -> ThemeMode.LIGHT
                         else -> ThemeMode.SYSTEM
                     }
+                    AlertScheduler.sync(application, profile.notificationsEnabled, profile.alertHour, profile.alertMinute)
+                } else {
+                    // No saved profile yet: the UI default is "alerts on at 07:00".
+                    AlertScheduler.sync(application, true, 7, 0)
                 }
             }
         }
 
-        // Cache seed and load today's horoscope
-        viewModelScope.launch {
-            repository.preloadAndCacheTodayHoroscopes()
-            loadHoroscope(_selectedRasi.value.id, _selectedCalendar.value)
-        }
+        // Load today's horoscope (Gemini first, local fallback). No pre-seeding of the cache,
+        // otherwise the generic local text would overwrite/block the Gemini result.
+        loadHoroscope(_selectedRasi.value.id, _selectedCalendar.value)
     }
 
     fun navigateTo(screen: AppScreen) {
@@ -140,11 +144,14 @@ class RasiViewModel(application: Application) : AndroidViewModel(application) {
                 today.get(Calendar.DAY_OF_YEAR) == current.get(Calendar.DAY_OF_YEAR)
     }
 
+    private var horoscopeJob: Job? = null
+
     private fun loadHoroscope(rasiId: RasiId, calendar: Calendar, forceRefresh: Boolean = false) {
-        viewModelScope.launch {
-            repository.getHoroscope(rasiId, calendar, forceRefresh).collect { item ->
-                _currentHoroscope.value = item
-            }
+        // Cancel any in-flight load so a slow earlier response can't overwrite a newer selection.
+        horoscopeJob?.cancel()
+        horoscopeJob = viewModelScope.launch {
+            repository.getHoroscope(rasiId, calendar, forceRefresh, allowAi = !_isOfflineMode.value)
+                .collect { item -> _currentHoroscope.value = item }
         }
     }
 
@@ -195,6 +202,7 @@ class RasiViewModel(application: Application) : AndroidViewModel(application) {
 
     fun toggleOfflineMode() {
         _isOfflineMode.value = !_isOfflineMode.value
+        loadHoroscope(_selectedRasi.value.id, _selectedCalendar.value)
         _toastMessage.value = if (_isOfflineMode.value)
             "ஆஃப்லைன் பயன்முறை ஆன் செய்யப்பட்டது (கேச் தரவு)"
         else
