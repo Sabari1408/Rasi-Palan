@@ -63,7 +63,7 @@ object NotificationHelper {
         advice: String
     ) {
         createNotificationChannel(context)
-        playSacredOmSound(context)
+        // The Om sound is played by the notification channel itself; playing it here too doubled it.
 
         val soundUri = getOmSoundUri(context)
 
@@ -82,7 +82,7 @@ object NotificationHelper {
         val message = "அதிர்ஷ்ட எண்: $luckyNumber | நிறம்: $luckyColor\n$advice"
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.star_on)
+            .setSmallIcon(R.drawable.ic_stat_rasi)
             .setContentTitle(title)
             .setContentText(message)
             .setStyle(NotificationCompat.BigTextStyle().bigText(message))
@@ -103,7 +103,7 @@ object NotificationHelper {
         thithi: String
     ) {
         createNotificationChannel(context)
-        playSacredOmSound(context)
+        // The Om sound is played by the notification channel itself; playing it here too doubled it.
 
         val soundUri = getOmSoundUri(context)
 
@@ -122,7 +122,7 @@ object NotificationHelper {
         val message = "நல்ல நேரம்: $nallaNeram | $thithi\nசுப காரியங்களுக்கு உகந்த நேரம்!"
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setSmallIcon(R.drawable.ic_stat_rasi)
             .setContentTitle(title)
             .setContentText(message)
             .setStyle(NotificationCompat.BigTextStyle().bigText(message))
