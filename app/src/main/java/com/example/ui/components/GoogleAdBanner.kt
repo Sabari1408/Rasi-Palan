@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.example.BuildConfig
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
@@ -25,7 +26,7 @@ import com.google.android.gms.ads.LoadAdError
 @Composable
 fun GoogleAdBanner(
     modifier: Modifier = Modifier,
-    adUnitId: String = "ca-app-pub-3940256099942544/6300978111" // Google AdMob standard test banner unit
+    adUnitId: String = BuildConfig.ADMOB_BANNER_ID // test unit unless ADMOB_BANNER_ID is provided at build time
 ) {
     var adFailed by remember { mutableStateOf(false) }
 
