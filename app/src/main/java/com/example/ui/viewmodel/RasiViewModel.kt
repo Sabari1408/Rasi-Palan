@@ -150,7 +150,7 @@ class RasiViewModel(application: Application) : AndroidViewModel(application) {
         // Cancel any in-flight load so a slow earlier response can't overwrite a newer selection.
         horoscopeJob?.cancel()
         horoscopeJob = viewModelScope.launch {
-            repository.getHoroscope(rasiId, calendar, forceRefresh, allowAi = !_isOfflineMode.value)
+            repository.getHoroscope(rasiId, calendar, forceRefresh)
                 .collect { item -> _currentHoroscope.value = item }
         }
     }
