@@ -8,6 +8,13 @@ plugins {
   alias(libs.plugins.google.services)
 }
 
+// AdMob IDs: Google's public TEST ids by default. Set ADMOB_APP_ID / ADMOB_BANNER_ID
+// (gradle property or environment variable) to your real ids for a release build.
+val admobAppId: String = (project.findProperty("ADMOB_APP_ID") as String?)
+  ?: System.getenv("ADMOB_APP_ID") ?: "ca-app-pub-3940256099942544~3347511713"
+val admobBannerId: String = (project.findProperty("ADMOB_BANNER_ID") as String?)
+  ?: System.getenv("ADMOB_BANNER_ID") ?: "ca-app-pub-3940256099942544/6300978111"
+
 android {
   namespace = "com.example"
   compileSdk { version = release(36) { minorApiLevel = 1 } }
@@ -18,6 +25,9 @@ android {
     targetSdk = 36
     versionCode = 1
     versionName = "1.0"
+
+    manifestPlaceholders["admobAppId"] = admobAppId
+    buildConfigField("String", "ADMOB_BANNER_ID", "\"$admobBannerId\"")
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
@@ -30,12 +40,6 @@ android {
       keyAlias = "upload"
       keyPassword = System.getenv("KEY_PASSWORD")
     }
-    create("debugConfig") {
-      storeFile = file("${rootDir}/debug.keystore")
-      storePassword = "android"
-      keyAlias = "androiddebugkey"
-      keyPassword = "android"
-    }
   }
 
   buildTypes {
@@ -43,9 +47,12 @@ android {
       isCrunchPngs = false
       isMinifyEnabled = false
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-      signingConfig = signingConfigs.getByName("release")
+      // Only sign when release credentials are provided (env vars); otherwise the build still works.
+      if (System.getenv("STORE_PASSWORD") != null) {
+        signingConfig = signingConfigs.getByName("release")
+      }
     }
-    debug { signingConfig = signingConfigs.getByName("debugConfig") }
+    // debug builds use the default Android debug keystore automatically
   }
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_11
@@ -111,7 +118,7 @@ dependencies {
   // implementation(libs.androidx.credentials.play.services)
   // implementation(libs.googleid)
   implementation(libs.firebase.appcheck.recaptcha)
-  implementation(libs.firebase.appcheck.debug)
+  debugImplementation(libs.firebase.appcheck.debug)
   implementation(libs.kotlinx.coroutines.android)
   implementation(libs.kotlinx.coroutines.core)
   implementation(libs.logging.interceptor)
